@@ -1,0 +1,97 @@
+{% extends 'core/base.html' %}
+
+{% block title %}My Progress{% endblock %}
+
+{% block content %}
+<h2>My Learning Progress</h2>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Overall Progress</h4>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-4" style="height: 25px;">
+                    <div class="progress-bar" role="progressbar" style="width: {{ overall_progress }}%">
+                        {{ overall_progress }}% Complete
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5>Total Subjects</h5>
+                                <h2>{{ total_subjects }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5>Videos Watched</h5>
+                                <h2>{{ videos_watched }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5>Study Hours</h5>
+                                <h2>{{ study_hours }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Subject-wise Progress</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Videos Available</th>
+                                <th>Videos Watched</th>
+                                <th>Progress</th>
+                                <th>Last Studied</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subject in subjects %}
+                            <tr>
+                                <td>{{ subject.name }}</td>
+                                <td>{{ subject.total_videos }}</td>
+                                <td>{{ subject.watched_videos }}</td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ subject.progress }}%">
+                                            {{ subject.progress }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ subject.last_studied|date }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No subjects available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

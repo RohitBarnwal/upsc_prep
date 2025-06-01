@@ -1,0 +1,74 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Search Videos{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>Search Videos</h3>
+            </div>
+            <div class="card-body">
+                <!-- Debug Info -->
+                {% if debug_info %}
+                <div class="alert alert-info">
+                    <p>Number of subjects: {{ debug_info.subject_count }}</p>
+                    <p>Subject names: {{ debug_info.subject_names|join:", " }}</p>
+                    <p>Videos found: {{ debug_info.video_count }}</p>
+                </div>
+                {% endif %}
+
+                <form method="get" class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <input type="text" name="q" class="form-control" placeholder="Search by title or description" value="{{ query }}">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="subject" class="form-select">
+                                <option value="">All Subjects</option>
+                                {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ subject.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary w-100">Search</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="list-group mt-3">
+                    {% for video in videos %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">{{ video.title }}</h5>
+                                <p class="mb-1">{{ video.description|truncatewords:30 }}</p>
+                                <small>
+                                    Subject: {{ video.subject.name }} |
+                                    Duration: {{ video.duration|default:0|divisibleby:60 }} minutes |
+                                    Views: {{ video.views }}
+                                </small>
+                                {% if video.views > 0 %}
+                                <span class="badge bg-success ms-2">Watched</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <a href="{% url 'video_detail' video.id %}" class="btn btn-primary">Watch Video</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="alert alert-info">
+                        No videos found matching your search criteria.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

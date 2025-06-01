@@ -1,0 +1,101 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ video.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'subject_detail' video.subject.id %}">{{ video.subject.name }}</a></li>
+                <li class="breadcrumb-item active">{{ video.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="ratio ratio-16x9 mb-3">
+                    <iframe 
+                        src="{{ video.url|safe }}" 
+                        title="{{ video.title }}"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <h3>{{ video.title }}</h3>
+                <p class="text-muted">
+                    Uploaded on {{ video.upload_date|date }} | 
+                    Duration: {{ video.duration|default:0|divisibleby:60 }} minutes |
+                    Views: {{ video.views }}
+                </p>
+                <hr>
+                <p>{{ video.description }}</p>
+                {% if not video.url|safe|slice:":24" == "https://www.youtube.com" %}
+                <div class="alert alert-info">
+                    <a href="{{ video.url|safe }}" target="_blank" class="btn btn-primary">Open Video in New Window</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>More Videos from {{ video.subject.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for related_video in related_videos %}
+                    {% if related_video != video %}
+                    <a href="{% url 'video_detail' related_video.id %}" class="list-group-item list-group-item-action">
+                        <h6 class="mb-1">{{ related_video.title }}</h6>
+                        <small>Duration: {{ related_video.duration|default:0|divisibleby:60 }} minutes</small>
+                        {% if related_video.views > 0 %}
+                        <span class="badge bg-success float-end">Watched</span>
+                        {% endif %}
+                    </a>
+                    {% endif %}
+                    {% empty %}
+                    <p class="text-center">No other videos available in this subject.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.is_authenticated and video.uploaded_by == user %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Video Statistics</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h3>{{ video.views }}</h3>
+                        <p>Total Views</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>{{ video.unique_viewers }}</h3>
+                        <p>Unique Viewers</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>{{ avg_watch_time|floatformat:1 }}</h3>
+                        <p>Average Watch Time (minutes)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %} 

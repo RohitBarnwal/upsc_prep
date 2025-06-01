@@ -1,0 +1,99 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <h1>Welcome, {{ user.username }}</h1>
+            
+            <div class="stats-cards mt-4">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Total Videos</h5>
+                                <p class="card-text display-4">{{ total_videos }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Hours Watched</h5>
+                                <p class="card-text display-4">{{ hours_watched }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Completion Rate</h5>
+                                <p class="card-text display-4">{{ completion_rate }}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subjects mt-5">
+                <h2>Your Subjects</h2>
+                <div class="row">
+                    {% for subject in subjects %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ subject.name }}</h5>
+                                <div class="progress mb-3">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ subject.progress }}%" 
+                                         aria-valuenow="{{ subject.progress }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ subject.progress }}%
+                                    </div>
+                                </div>
+                                <a href="{% url 'subject_detail' subject.id %}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="recent-videos mt-5">
+                <h2>Recent Videos</h2>
+                <div class="list-group">
+                    {% for video in recent_videos %}
+                    <a href="{% url 'video_detail' video.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h5 class="mb-1">{{ video.title }}</h5>
+                            <small>{{ video.upload_date|date }}</small>
+                        </div>
+                        <p class="mb-1">{{ video.description|truncatewords:30 }}</p>
+                        <small>{{ video.subject.name }}</small>
+                    </a>
+                    {% empty %}
+                    <p class="text-center">No videos available yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Quick Actions</h5>
+                    <div class="list-group">
+                        <a href="{% url 'video_upload' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-upload"></i> Upload New Video
+                        </a>
+                        <a href="{% url 'search' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-search"></i> Search Videos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

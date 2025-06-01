@@ -1,0 +1,155 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ subject.name }}</h1>
+    <div class="progress mb-4">
+        <div class="progress-bar" role="progressbar" 
+             style="width: {{ progress_percentage }}%"
+             aria-valuenow="{{ completed_topics }}" 
+             aria-valuemin="0" 
+             aria-valuemax="{{ total_topics }}">
+            {{ completed_topics }}/{{ total_topics }} Topics Completed
+        </div>
+    </div>
+
+    <div class="topics-list">
+        {% for topic in topics %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="form-check">
+                        <input type="checkbox" 
+                               class="form-check-input topic-checkbox" 
+                               id="topic-{{ topic.id }}"
+                               data-topic-id="{{ topic.id }}"
+                               {% if topic.progress.exists %}checked{% endif %}>
+                        <label class="form-check-label" for="topic-{{ topic.id }}">
+                            {{ topic.name }}
+                        </label>
+                    </div>
+                    <span class="badge {% if topic.progress.exists %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if topic.progress.exists %}
+                            Completed
+                        {% else %}
+                            In Progress
+                        {% endif %}
+                    </span>
+                </div>
+                {% if topic.description %}
+                <p class="card-text mt-2">{{ topic.description }}</p>
+                {% endif %}
+
+                {% if topic.videos.exists %}
+                <div class="videos-list mt-3">
+                    <h6>Related Videos:</h6>
+                    <div class="list-group">
+                        {% for video in topic.videos.all %}
+                        <a href="{% url 'video_detail' video.id %}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ video.title }}</h6>
+                                <small>{{ video.duration|default:0|divisibleby:60 }} minutes</small>
+                            </div>
+                            <p class="mb-1">{{ video.description|truncatewords:20 }}</p>
+                            {% if video.views > 0 %}
+                            <span class="badge bg-success">Watched</span>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-outline-primary add-video-btn" data-topic-id="{{ topic.id }}" data-bs-toggle="modal" data-bs-target="#addVideoModal">
+                        <i class="fas fa-plus"></i> Add Video
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add Video Modal -->
+<div class="modal fade" id="addVideoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Video to Topic</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addVideoForm" method="post" action="{% url 'add_video_to_topic' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="topic_id" id="modalTopicId">
+                    <div class="mb-3">
+                        <label for="videoUrl" class="form-label">Video URL</label>
+                        <input type="url" class="form-control" id="videoUrl" name="url" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="videoTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="videoTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="videoDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="videoDescription" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="videoDuration" class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" id="videoDuration" name="duration" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="addVideoForm" class="btn btn-primary">Add Video</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('.topic-checkbox').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const topicId = this.dataset.topicId;
+        const isCompleted = this.checked;
+        
+        fetch(`/dashboard/topic/${topicId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                is_completed: isCompleted
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the badge
+                const badge = this.closest('.card-body').querySelector('.badge');
+                badge.textContent = isCompleted ? 'Completed' : 'In Progress';
+                badge.className = `badge ${isCompleted ? 'bg-success' : 'bg-secondary'}`;
+                
+                // Update progress bar
+                location.reload(); // Simple solution to update progress bar
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+
+document.querySelectorAll('.add-video-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        document.getElementById('modalTopicId').value = this.dataset.topicId;
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

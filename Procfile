@@ -1,0 +1,1 @@
+web: gunicorn upsc_project.wsgi:application --log-file - 
